@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -30,39 +32,68 @@ void show_tree(tree Tree) {
 	cout << "</table>";
 }
 
-void get_postfix(tree Tree, char*& postfix) {
-	queue<node> que;
-	postfix = nullptr;
-	DFS_RRL(Tree.root, que);
+void DFS_LRR(node* root, queue<node*>& que);
+void DFS_RRL(node* root, queue<node*>& que);
+
+void get_que(queue<node*> que, char*& str, bool tg_infix) {
+	node* curr = que.front();
 	int i = 0;
 	while (que.size() > 0) {
-		node curr;
-		if (curr.operation == '\0') {
+		if (!curr) break;
+		if (curr->operation == '\0') {
 			char* num = new char[11];
-			sprintf(num, "%d", curr.value);
-			strcat(postfix, " ");
-			strcat(postfix, num);
+			if (tg_infix && !isdigit(str[i - 1])) {
+				strcat(str, "(");
+				i++;
+			}
+			else if (tg_infix && isdigit(str[i - 1])) {
+				strcat(str, ")");
+				i++;
+			}
+			sprintf(num, "%d", curr->value);
+			strcat(str, " ");
+			strcat(str, num);
+			i += strlen(num) + 1;
 		}
 		else {
-			strcat(postfix, " ");
+			strcat(str, " ");
+			i++;
 			char* temp = new char[2];
-			temp[0] = curr.operation; temp[1] = '\0';
-			strcat(postfix, temp);
+			temp[0] = curr->operation; temp[1] = '\0';
+			strcat(str, temp);
 		}
-		curr = que.front();
 		que.pop();
+		curr = que.front();
 	}
 }
 
-void DFS_RRL(node* root, queue<node>& que) {
+void get_infix(tree& Tree, char*& infix) {
+	queue<node*> que;
+	DFS_LRR(Tree.root, que);
+	get_que(que, infix, false);
+}
+
+void get_postfix(tree Tree, char*& postfix) {
+	queue<node*> que;
+	DFS_RRL(Tree.root, que);
+	get_que(que, postfix, false);
+}
+
+void DFS_RRL(node* root, queue<node*>& que) {
 	if (root) {
-		que.push(*root);
+		que.push(root);
 		DFS_RRL(root->right, que);
 		DFS_RRL(root->left, que);
 	}
 }
 
-void get_infix(tree Tree, char*& infix);
+void DFS_LRR(node* root, queue<node*>& que) {
+	if (root) {
+		DFS_LRR(root->left, que);
+		que.push(root);
+		DFS_LRR(root->right, que);
+	}
+}
 
 void process_exp(char* data) {
 	if (!is_get()) {
@@ -82,12 +113,12 @@ void process_exp(char* data) {
 		if (is_infix) {
 			char* postfix = nullptr;
 			translate_exp(exp, postfix);
-			cout << postfix;
+			exp = postfix;
 		}
-		stack<node> subtrees;
+		stack<node*> subtrees;
 		istringstream expression(exp);
 		while (!expression.eof()) {
-			char* str = new char[10];
+			char* str = new char[11];
 			expression >> str;
 			if (str[1] == '\0' && !isdigit(str[0])) {
 				char operation = str[0];
@@ -98,8 +129,14 @@ void process_exp(char* data) {
 				add_to_tree(num, subtrees);
 			}
 		}
-		tree Tree; Tree.root = &subtrees.top();
-		
+		tree Tree; Tree.root = subtrees.top();
+		char* returned_postfix = new char[strlen(exp)];
+		get_postfix(Tree, returned_postfix);
+		returned_postfix = _strrev(returned_postfix);
+		char* returned_infix = new char[strlen(exp)];
+		get_infix(Tree, returned_infix);
+		cout << "<p>" << returned_postfix << "</p>";
+		cout << "<p>" << returned_infix << "</p>";
 	}
 }
 
