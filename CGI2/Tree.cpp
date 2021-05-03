@@ -35,42 +35,34 @@ void show_tree(tree Tree) {
 void DFS_LRR(node* root, queue<node*>& que);
 void DFS_RRL(node* root, queue<node*>& que);
 
-void get_que(queue<node*> que, char*& str, bool tg_infix) {
-	node* curr = que.front();
+void get_que(queue<node*>& que, char*& str, bool tg_infix) {
 	int i = 0;
+	str = new char[1]{ '\0' };
 	while (que.size() > 0) {
+		node* curr = que.front();
 		if (!curr) break;
 		if (curr->operation == '\0') {
 			char* num = new char[11];
-			if (tg_infix && !isdigit(str[i - 1])) {
-				strcat(str, "(");
-				i++;
-			}
-			else if (tg_infix && isdigit(str[i - 1])) {
-				strcat(str, ")");
-				i++;
-			}
 			sprintf(num, "%d", curr->value);
-			strcat(str, " ");
 			strcat(str, num);
-			i += strlen(num) + 1;
+			strcat(str, " ");
 		}
 		else {
-			strcat(str, " ");
-			i++;
 			char* temp = new char[2];
 			temp[0] = curr->operation; temp[1] = '\0';
 			strcat(str, temp);
+			if (curr->operation != '(' && curr->operation != ')')
+			strcat(str, " ");
 		}
 		que.pop();
-		curr = que.front();
 	}
+	
 }
 
 void get_infix(tree& Tree, char*& infix) {
 	queue<node*> que;
 	DFS_LRR(Tree.root, que);
-	get_que(que, infix, false);
+	get_que(que, infix, true);
 }
 
 void get_postfix(tree Tree, char*& postfix) {
@@ -89,25 +81,45 @@ void DFS_RRL(node* root, queue<node*>& que) {
 
 void DFS_LRR(node* root, queue<node*>& que) {
 	if (root) {
+		if (root->operation != '\0')
+		{
+			node* temp = new node; temp->operation = '(';
+			que.push(temp);
+		}
 		DFS_LRR(root->left, que);
 		que.push(root);
 		DFS_LRR(root->right, que);
+		if (root->operation != '\0')
+		{
+			node* temp = new node; temp->operation = ')';
+			que.push(temp);
+		}
 	}
 }
 
 void process_exp(char* data) {
 	if (!is_get()) {
+#ifndef DEBUG
 		delete[] data;
 		int buf_size = get_content_length();
 		data = new char[buf_size + 1];
 		fread_s(data, buf_size + 1, sizeof(char), buf_size, stdin);
-		data[buf_size] = 0;
+		data[buf_size] = 0; 
 
 		char* exp = nullptr;
 		get_param_value(exp, "exp", data);
+#endif // DEBUG
+#ifdef DEBUG
+		const char* exp = "1 2 + 3 *";
+#endif // !DEBUG
 
+#ifndef DEBUG
 		char* choice = nullptr;
 		get_param_value(choice, "type", data);
+#endif
+#ifdef DEBUG
+		const char* choice = "post";
+#endif
 		bool is_infix = strcmp(choice, "in") == 0 ? true : false;
 
 		if (is_infix) {

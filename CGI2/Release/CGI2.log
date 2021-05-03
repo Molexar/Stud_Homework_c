@@ -2,8 +2,8 @@
   Tree.cpp
 C:\Programming\CGI2-master\CGI2\Tree.h(52,20): warning C4018: <: несоответствие типов со знаком и без знака
   Создание кода
-  2 of 327 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+  12 of 308 functions ( 3.9%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   Создание кода завершено
   CGI2.vcxproj -> C:\Programming\OpenServer\domains\localhost\tree.cgi
